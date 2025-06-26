@@ -1,7 +1,8 @@
 package com.Soham.removeBG.Service.Impl;
 
 import com.Soham.removeBG.DTO.UserDTO;
-import com.Soham.removeBG.Entity.UserEnitity;
+
+import com.Soham.removeBG.Entity.UserEntity;
 import com.Soham.removeBG.Repository.UserRepository;
 import com.Soham.removeBG.Service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +18,9 @@ public class UserServiceImple implements UserService {
 
     @Override
     public UserDTO saveUser(UserDTO userDTO) {
-        Optional<UserEnitity> optionalUser = userRepository.findBYClerkID(userDTO.getClerkID());
+        Optional<UserEntity> optionalUser = userRepository.findByClerkId(userDTO.getClerkID());
 
-        UserEnitity exsisitingUser;
+        UserEntity exsisitingUser;
         if (optionalUser.isPresent()) {
             exsisitingUser = optionalUser.get();
             exsisitingUser.setEmail(userDTO.getEmail());
@@ -34,14 +35,14 @@ public class UserServiceImple implements UserService {
 
 
         }
-       UserEnitity newUSer= mapTOEntity(userDTO);
+       UserEntity newUSer= mapTOEntity(userDTO);
         userRepository.save(newUSer);
         return mapToDTO(newUSer);
     }
 
-    private UserDTO mapToDTO(UserEnitity newUSer) {
+    private UserDTO mapToDTO(UserEntity newUSer) {
        return UserDTO.builder()
-                .clerkID(newUSer.getClerkID())
+                .clerkID(newUSer.getClerkId())
                 .credits(newUSer.getCredits())
                 .email(newUSer.getEmail())
                 .firstName(newUSer.getFirstName())
@@ -50,9 +51,9 @@ public class UserServiceImple implements UserService {
 
     }
 
-    private UserEnitity mapTOEntity(UserDTO userDTO) {
-        return   UserEnitity.builder()
-                .clerkID(userDTO.getClerkID())
+    private UserEntity mapTOEntity(UserDTO userDTO) {
+        return   UserEntity.builder()
+                .clerkId(userDTO.getClerkID())
                 .email(userDTO.getEmail())
                 .firstName(userDTO.getFirstName())
                 .lastName((userDTO.getLastName()))
