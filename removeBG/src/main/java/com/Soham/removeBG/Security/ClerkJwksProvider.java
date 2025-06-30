@@ -18,13 +18,13 @@ import java.util.Map;
 @Component
 public class ClerkJwksProvider {
 
-    @Value("{clerk.jwtk-url}")
+    @Value("${clerk.jwks-url}")
     private  String jwksUrl;
     private final Map<String, PublicKey> KeyCache= new HashMap<>();
     private long lastFetchedTime=0;
-    private static final long CACHE_TTK=360000;
+    private static final long CACHE_TTL=360000;
     public  PublicKey getPublicKey(String kid) throws Exception{
-        if(KeyCache.containsKey(kid) && System.currentTimeMillis()-lastFetchedTime<CACHE_TTK){
+        if(KeyCache.containsKey(kid) && System.currentTimeMillis()-lastFetchedTime<CACHE_TTL){
             return  KeyCache.get(kid);
         }
         refreshKeys();

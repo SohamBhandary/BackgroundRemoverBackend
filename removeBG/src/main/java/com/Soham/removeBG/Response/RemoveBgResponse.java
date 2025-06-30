@@ -6,12 +6,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class RemoveBGResponse {
-
+public class RemoveBgResponse {
     private boolean success;
     private HttpStatus statusCode;
     private Object data;

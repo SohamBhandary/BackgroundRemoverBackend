@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class UserEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,14 +23,12 @@ public class UserEntity {
     private String firstName;
     private String lastName;
     private Integer credits;
-    private String photoUrl;
-    @PrePersist
-    public void prePersist(){
-        if(credits==null){
-            credits=5;
-        }
-
-
-    }
+    private Integer photoUrl;
+     @PrePersist
+    public  void prePersist(){
+         if (credits==null){
+             credits=5;
+         }
+     }
 
 }
