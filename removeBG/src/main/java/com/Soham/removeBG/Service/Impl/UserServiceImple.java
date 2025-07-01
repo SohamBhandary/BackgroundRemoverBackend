@@ -6,6 +6,7 @@ import com.Soham.removeBG.Repository.UserRepository;
 import com.Soham.removeBG.Service.UserService;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -14,6 +15,14 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserServiceImple implements UserService {
     private final UserRepository userRepository;
+
+    @Override
+    public UserDTO getUserByClerkId(String clerkId){
+      UserEntity userEntity=  userRepository.findByClerkId(clerkId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
+     return mapToDTO(userEntity);
+
+    }
+
     @Override
     public UserDTO saveUser(UserDTO userDTO){
       Optional<UserEntity> optionalUser= userRepository.findByClerkId(userDTO.getClerkId());

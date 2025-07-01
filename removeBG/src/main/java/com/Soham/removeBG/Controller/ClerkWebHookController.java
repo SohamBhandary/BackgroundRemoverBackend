@@ -69,21 +69,32 @@ public class ClerkWebHookController {
     }
 
     private void handleUserDeleted(JsonNode data) {
-      UserDTO newUser=  UserDTO.builder()
-                .clerkId(data.path("id").asText())
-                .email(data.path("email_address").path(0).path("email_address").asText())
-                .firstName(data.path("first_name").asText())
-                .lastName(data.path("last_name").asText())
-                .build();
-      userService.saveUser(newUser);
+
 
 
     }
 
     private void handleUserUpdated(JsonNode data) {
+        String clerkid=data.path("id").asText();
+
+        UserDTO exsistingUser=userService.getUserByClerkId(clerkid);
+        exsistingUser.setEmail(data.path("email_addresses").path(0).path("email_address").asText());
+        exsistingUser.setFirstName(data.path("first_name").asText());
+        exsistingUser.setLastName(data.path("last_name").asText());
+        exsistingUser.setPhotoUrl(Integer.valueOf(data.path("image_url").asText()));
+        userService.saveUser(exsistingUser);
+
+
     }
 
     private void handleUserCreated(JsonNode data) {
+        UserDTO newUser=  UserDTO.builder()
+                .clerkId(data.path("id").asText())
+                .email(data.path("email_addresses").path(0).path("email_address").asText())
+                .firstName(data.path("first_name").asText())
+                .lastName(data.path("last_name").asText())
+                .build();
+        userService.saveUser(newUser);
     }
 
     private boolean verifyWebhookSignature(String svixId, String svixTimestamp, String svixSignature, String payload) {

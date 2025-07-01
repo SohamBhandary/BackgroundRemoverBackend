@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users").permitAll() // ✅ allow user sync without auth
+                        .requestMatchers("/api/webhooks/**").permitAll() // ✅ allow user sync without auth
                         .anyRequest().authenticated()              // 🔐 protect everything else
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
