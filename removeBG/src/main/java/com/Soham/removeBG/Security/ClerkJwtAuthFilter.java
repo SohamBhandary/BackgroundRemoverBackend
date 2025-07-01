@@ -37,7 +37,8 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         System.out.println("API HITTING ClerkJwtAuthFilter");
 
-        if (request.getRequestURI().contains("/api/webhooks")) {
+        if (request.getRequestURI().contains("/api/webhooks")||
+                request.getRequestURI().equals("/api/users")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -71,12 +72,12 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
             filterChain.doFilter(request, response);
-            System.out.println("completed");
+
         } catch (Exception e) {
 
-            System.out.println("Error in ClerkJwtAuthFilter");
-            e.printStackTrace();
+
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token");
+            return;
         }
     }
 }
