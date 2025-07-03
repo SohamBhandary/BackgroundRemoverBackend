@@ -22,40 +22,48 @@ import java.util.Base64;
 import java.util.Collections;
 
 @Component
+@RequiredArgsConstructor
 public class ClerkJwtAuthFilter extends OncePerRequestFilter {
 
-    @Value(("${clerk.issuer}"))
+    @Value("${clerk.issuer}")
     private final String clerkIssuer;
+
     private final ClerkJwksProvider jwksProvider;
-    public ClerkJwtAuthFilter(@Value("${clerk.issuer}") String clerkIssuer, ClerkJwksProvider jwksProvider) {
-        this.clerkIssuer = clerkIssuer;
-        this.jwksProvider = jwksProvider;
-    }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
-        System.out.println("API HITTING ClerkJwtAuthFilter");
 
-        if (request.getRequestURI().contains("/api/webhooks")||
-                request.getRequestURI().equals("/api/users")) {
+        String uri = request.getRequestURI();
+        System.out.println("🔍 Incoming request URI: " + uri);
+
+        // ✅ Bypass JWT check for webhook & public user routes
+        if (uri.startsWith("/api/webhooks") || uri.startsWith("/api/users")) {
+            System.out.println("🧠 Skipping ClerkJwtAuthFilter for URI: " + uri);
             filterChain.doFilter(request, response);
             return;
         }
+
+        // ✅ Extract Authorization header
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("❌ Missing or invalid Authorization header");
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authorization header missing/invalid");
             return;
         }
-        try {
 
-            String token = authHeader.substring(7);
+        try {
+            String token = authHeader.substring(7); // remove "Bearer "
             String[] chunks = token.split("\\.");
             String headerJson = new String(Base64.getUrlDecoder().decode(chunks[0]));
             ObjectMapper mapper = new ObjectMapper();
             JsonNode headerNode = mapper.readTree(headerJson);
             String kid = headerNode.get("kid").asText();
+
             PublicKey publicKey = jwksProvider.getPublicKey(kid);
+
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(publicKey)
                     .setAllowedClockSkewSeconds(60)
@@ -63,21 +71,24 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
+
             String clerkUserId = claims.getSubject();
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                    clerkUserId,
-                    null,
-                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
-            );
+
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(
+                            clerkUserId,
+                            null,
+                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                    );
+
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            System.out.println("✅ JWT verified for Clerk user: " + clerkUserId);
 
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
-
-
+            System.out.println("❌ JWT verification failed: " + e.getMessage());
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token");
-            return;
         }
     }
 }

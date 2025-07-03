@@ -17,6 +17,22 @@ public class UserServiceImple implements UserService {
     private final UserRepository userRepository;
 
     @Override
+    public void deleteUserByClerkId(String clerkId) {
+        System.out.println("🧹 Attempting to delete user with clerkId: " + clerkId);
+
+        Optional<UserEntity> optionalUser = userRepository.findByClerkId(clerkId);
+
+        if (optionalUser.isPresent()) {
+            UserEntity userEntity = optionalUser.get();
+            System.out.println("✅ Found user in DB: " + userEntity.getEmail());
+            userRepository.delete(userEntity);
+            System.out.println("✅ Successfully deleted user from DB.");
+        } else {
+            System.out.println("❌ No user found in DB with clerkId: " + clerkId);
+        }
+    }
+
+    @Override
     public UserDTO getUserByClerkId(String clerkId){
       UserEntity userEntity=  userRepository.findByClerkId(clerkId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
      return mapToDTO(userEntity);
@@ -31,7 +47,7 @@ public class UserServiceImple implements UserService {
           exsistingUser.setEmail(userDTO.getEmail());
           exsistingUser.setFirstName(userDTO.getFirstName());
           exsistingUser.setLastName((userDTO.getLastName()));
-          exsistingUser.setPhotoUrl(userDTO.getPhotoUrl());
+          exsistingUser.setPhotoUrl(String.valueOf(userDTO.getPhotoUrl()));
           if(userDTO.getCredits()!=null){
               exsistingUser.setCredits((userDTO.getCredits()));
           }
@@ -66,7 +82,7 @@ public class UserServiceImple implements UserService {
                 .email(userDTO.getEmail())
                 .firstName(userDTO.getFirstName())
                 .lastName(userDTO.getLastName())
-                .photoUrl(userDTO.getPhotoUrl())
+                .photoUrl(String.valueOf(userDTO.getPhotoUrl()))
                 .build();
 
     }

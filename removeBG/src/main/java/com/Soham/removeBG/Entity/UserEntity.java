@@ -16,14 +16,15 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique = true,nullable = false)
+    @Column(name = "clerk_id", unique = true, nullable = false)
     private String clerkId;
+
     @Column(unique = true,nullable = false)
     private String email;
     private String firstName;
     private String lastName;
     private Integer credits;
-    private Integer photoUrl;
+    private String photoUrl;
      @PrePersist
     public  void prePersist(){
          if (credits==null){

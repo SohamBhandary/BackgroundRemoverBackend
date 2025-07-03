@@ -21,7 +21,7 @@ public class UserDTO {
     private String lastName;
 
 
-    private Integer photoUrl;
+    private String photoUrl;
     private Integer credits;
 
 }
