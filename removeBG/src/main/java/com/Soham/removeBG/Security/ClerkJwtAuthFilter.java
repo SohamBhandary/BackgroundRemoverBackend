@@ -26,9 +26,11 @@ import java.util.Collections;
 public class ClerkJwtAuthFilter extends OncePerRequestFilter {
 
     @Value("${clerk.issuer}")
-    private final String clerkIssuer;
+    private String clerkIssuer; // ✅ no final
 
     private final ClerkJwksProvider jwksProvider;
+
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
