@@ -9,12 +9,12 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.security.PublicKey;
@@ -26,11 +26,9 @@ import java.util.Collections;
 public class ClerkJwtAuthFilter extends OncePerRequestFilter {
 
     @Value("${clerk.issuer}")
-    private String clerkIssuer; // ✅ no final
+    private String clerkIssuer;
 
     private final ClerkJwksProvider jwksProvider;
-
-
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -39,31 +37,44 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String uri = request.getRequestURI();
-        System.out.println("🔍 Incoming request URI: " + uri);
+        String method = request.getMethod();
+        System.out.println("🔍 Incoming request: " + method + " " + uri);
 
-        // ✅ Bypass JWT check for webhook & public user routes
-        if (uri.startsWith("/api/webhooks") || uri.startsWith("/api/users")) {
-            System.out.println("🧠 Skipping ClerkJwtAuthFilter for URI: " + uri);
+        // ✅ Skip these URIs (user sync + public routes + webhooks)
+        if (
+                uri.startsWith("/api/webhooks") ||
+                        (uri.equals("/api/users") && method.equals("POST")) ||
+                        uri.startsWith("/api/users/public")
+        ) {
+            System.out.println("🧠 Skipping ClerkJwtAuthFilter for: " + method + " " + uri);
             filterChain.doFilter(request, response);
             return;
         }
 
-        // ✅ Extract Authorization header
+        // ✅ Require token for everything else
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("❌ Missing or invalid Authorization header");
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authorization header missing/invalid");
+            System.out.println("❌ Missing or invalid Authorization header for: " + method + " " + uri);
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authorization header missing or invalid");
             return;
         }
 
         try {
             String token = authHeader.substring(7); // remove "Bearer "
             String[] chunks = token.split("\\.");
+            if (chunks.length < 2) {
+                throw new RuntimeException("Invalid JWT structure");
+            }
+
             String headerJson = new String(Base64.getUrlDecoder().decode(chunks[0]));
             ObjectMapper mapper = new ObjectMapper();
             JsonNode headerNode = mapper.readTree(headerJson);
-            String kid = headerNode.get("kid").asText();
 
+            if (!headerNode.has("kid")) {
+                throw new RuntimeException("JWT header missing 'kid'");
+            }
+
+            String kid = headerNode.get("kid").asText();
             PublicKey publicKey = jwksProvider.getPublicKey(kid);
 
             Claims claims = Jwts.parserBuilder()
@@ -84,13 +95,13 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
                     );
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            System.out.println("✅ JWT verified for Clerk user: " + clerkUserId);
+            System.out.println("✅ JWT verified for Clerk user: " + clerkUserId + " (for " + method + " " + uri + ")");
 
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
-            System.out.println("❌ JWT verification failed: " + e.getMessage());
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token");
+            System.out.println("❌ JWT verification failed for " + method + " " + uri + ": " + e.getMessage());
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token: " + e.getMessage());
         }
     }
 }
