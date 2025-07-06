@@ -31,6 +31,11 @@ public class UserController {
                         .build();
             }
 
+            // ✅ Ensure clerkId is never null
+            if (userDTO.getClerkId() == null || userDTO.getClerkId().isEmpty()) {
+                userDTO.setClerkId(authentication.getName()); // ✅ This line ensures no null clerkId
+            }
+
             // ✅ Proceed to save user
             UserDTO user = userService.saveUser(userDTO);
 
@@ -49,7 +54,6 @@ public class UserController {
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
                     .build();
         }
-
     }
     @GetMapping("/credits")
     public ResponseEntity<?> getUserCredits(Authentication authentication){

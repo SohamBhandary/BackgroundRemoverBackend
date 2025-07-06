@@ -43,7 +43,6 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
         // ✅ Skip these URIs (user sync + public routes + webhooks)
         if (
                 uri.startsWith("/api/webhooks") ||
-                        (uri.equals("/api/users") && method.equals("POST")) ||
                         uri.startsWith("/api/users/public")
         ) {
             System.out.println("🧠 Skipping ClerkJwtAuthFilter for: " + method + " " + uri);
