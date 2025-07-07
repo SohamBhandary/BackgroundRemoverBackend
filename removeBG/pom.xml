@@ -93,12 +93,14 @@
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-openfeign</artifactId>
 		</dependency>
+
+		<!-- Razorpay Payment Gateway -->
+		<dependency>
+			<groupId>com.razorpay</groupId>
+			<artifactId>razorpay-java</artifactId>
+			<version>1.4.8</version>
+		</dependency>
 	</dependencies>
-	<dependency>
-		<groupId>com.razorpay</groupId>
-		<artifactId>razorpay-java</artifactId>
-		<version>1.4.8</version>
-	</dependency>
 
 	<!-- Spring Cloud BOM -->
 	<dependencyManagement>
@@ -146,4 +148,5 @@
 			</plugin>
 		</plugins>
 	</build>
+
 </project>
