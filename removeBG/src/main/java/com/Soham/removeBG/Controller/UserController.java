@@ -22,7 +22,7 @@ public class UserController {
     @PostMapping
     public RemoveBgResponse createOrUpdateUser(@RequestBody UserDTO userDTO, Authentication authentication) {
         try {
-            // ✅ Check if authentication is not null before using it
+
             if (authentication != null && !authentication.getName().equals(userDTO.getClerkId())) {
                 return RemoveBgResponse.builder()
                         .success(false)
@@ -31,12 +31,12 @@ public class UserController {
                         .build();
             }
 
-            // ✅ Ensure clerkId is never null
+
             if (userDTO.getClerkId() == null || userDTO.getClerkId().isEmpty()) {
-                userDTO.setClerkId(authentication.getName()); // ✅ This line ensures no null clerkId
+                userDTO.setClerkId(authentication.getName());
             }
 
-            // ✅ Proceed to save user
+
             UserDTO user = userService.saveUser(userDTO);
 
             return RemoveBgResponse.builder()
@@ -46,8 +46,8 @@ public class UserController {
                     .build();
 
         } catch (Exception e) {
-            // ✅ Log the error for debugging
-            e.printStackTrace(); // Optional: log this properly in real apps
+
+            e.printStackTrace(); 
             return RemoveBgResponse.builder()
                     .success(false)
                     .data(e.getMessage())

@@ -43,7 +43,7 @@ public class ClerkWebHookController {
             JsonNode rootNode = objectMapper.readTree(payload);
             String eventType = rootNode.path("type").asText();
 
-            System.out.println("📬 Incoming Clerk Webhook Event Type: " + eventType);
+
 
             switch (eventType) {
                 case "user.created":
@@ -56,7 +56,7 @@ public class ClerkWebHookController {
                     handleUserDeleted(rootNode.path("data"));
                     break;
                 default:
-                    System.out.println("⚠️ Unhandled event type: " + eventType);
+                    System.out.println("⚠ Unhandled event type: " + eventType);
             }
 
             return ResponseEntity.ok().build();
@@ -75,14 +75,13 @@ public class ClerkWebHookController {
     private void handleUserDeleted(JsonNode data) {
         String clerkId = data.path("id").asText();
 
-        System.out.println("🛎️ Webhook received: user.deleted");
-        System.out.println("🔍 Clerk ID to delete: " + clerkId);
+
 
         try {
             userService.deleteUserByClerkId(clerkId);
-            System.out.println("✅ User successfully deleted from DB.");
+
         } catch (Exception e) {
-            System.out.println("❌ Failed to delete user: " + e.getMessage());
+
             e.printStackTrace();
         }
     }
@@ -99,9 +98,9 @@ public class ClerkWebHookController {
             existingUser.setLastName(data.path("last_name").asText());
             existingUser.setPhotoUrl(data.path("image_url").asText());
             userService.saveUser(existingUser);
-            System.out.println("✅ User updated in DB.");
+
         } catch (Exception e) {
-            System.out.println("❌ Failed to update user: " + e.getMessage());
+
             e.printStackTrace();
         }
     }
@@ -119,9 +118,9 @@ public class ClerkWebHookController {
 
         try {
             userService.saveUser(newUser);
-            System.out.println("✅ User saved to DB.");
+
         } catch (Exception e) {
-            System.out.println("❌ Failed to create user: " + e.getMessage());
+
             e.printStackTrace();
         }
     }

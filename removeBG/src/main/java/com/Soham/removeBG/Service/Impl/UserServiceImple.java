@@ -26,9 +26,9 @@ public class UserServiceImple implements UserService {
             UserEntity userEntity = optionalUser.get();
             System.out.println("✅ Found user in DB: " + userEntity.getEmail());
             userRepository.delete(userEntity);
-            System.out.println("✅ Successfully deleted user from DB.");
+            System.out.println("Successfully deleted user from DB.");
         } else {
-            System.out.println("❌ No user found in DB with clerkId: " + clerkId);
+            System.out.println(" No user found in DB with clerkId: " + clerkId);
         }
     }
 

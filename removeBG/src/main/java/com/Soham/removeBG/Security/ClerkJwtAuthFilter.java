@@ -38,22 +38,21 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
         String method = request.getMethod();
-        System.out.println("🔍 Incoming request: " + method + " " + uri);
 
-        // ✅ Skip these URIs (user sync + public routes + webhooks)
+
         if (
                 uri.startsWith("/api/webhooks") ||
                         uri.startsWith("/api/users/public")
         ) {
-            System.out.println("🧠 Skipping ClerkJwtAuthFilter for: " + method + " " + uri);
+
             filterChain.doFilter(request, response);
             return;
         }
 
-        // ✅ Require token for everything else
+
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("❌ Missing or invalid Authorization header for: " + method + " " + uri);
+
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authorization header missing or invalid");
             return;
         }
@@ -94,12 +93,12 @@ public class ClerkJwtAuthFilter extends OncePerRequestFilter {
                     );
 
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            System.out.println("✅ JWT verified for Clerk user: " + clerkUserId + " (for " + method + " " + uri + ")");
+
 
             filterChain.doFilter(request, response);
 
         } catch (Exception e) {
-            System.out.println("❌ JWT verification failed for " + method + " " + uri + ": " + e.getMessage());
+
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid JWT token: " + e.getMessage());
         }
     }

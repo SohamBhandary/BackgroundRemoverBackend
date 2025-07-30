@@ -37,7 +37,7 @@ public class OrderController {
         try{
          Order order= orderService.createOrder(planId,authentication.getName());
         RazorPayOrderDTO  responseDTO= convertToDTO(order);
-        RemoveBgResponse.builder()
+            response = RemoveBgResponse.builder()
                 .success(true)
                 .data(responseDTO)
                 .statusCode(HttpStatus.CREATED)
