@@ -18,13 +18,13 @@ public class UserServiceImple implements UserService {
 
     @Override
     public void deleteUserByClerkId(String clerkId) {
-        System.out.println("🧹 Attempting to delete user with clerkId: " + clerkId);
+        System.out.println(" Attempting to delete user with clerkId: " + clerkId);
 
         Optional<UserEntity> optionalUser = userRepository.findByClerkId(clerkId);
 
         if (optionalUser.isPresent()) {
             UserEntity userEntity = optionalUser.get();
-            System.out.println("✅ Found user in DB: " + userEntity.getEmail());
+            System.out.println("Found user in DB: " + userEntity.getEmail());
             userRepository.delete(userEntity);
             System.out.println("Successfully deleted user from DB.");
         } else {
