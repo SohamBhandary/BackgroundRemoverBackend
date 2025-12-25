@@ -6,6 +6,7 @@ import com.Soham.removeBG.Repository.UserRepository;
 import com.Soham.removeBG.Service.UserService;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -13,52 +14,64 @@ import java.util.Optional;
 @Builder
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImple implements UserService {
     private final UserRepository userRepository;
 
     @Override
     public void deleteUserByClerkId(String clerkId) {
-        System.out.println(" Attempting to delete user with clerkId: " + clerkId);
+
+        log.info("Attempting to delete user with clerkId={}", clerkId);
 
         Optional<UserEntity> optionalUser = userRepository.findByClerkId(clerkId);
 
         if (optionalUser.isPresent()) {
             UserEntity userEntity = optionalUser.get();
-            System.out.println("Found user in DB: " + userEntity.getEmail());
+            log.info("User found in DB. email={}", userEntity.getEmail());
             userRepository.delete(userEntity);
-            System.out.println("Successfully deleted user from DB.");
+            log.info("User deleted successfully for clerkId={}", clerkId);
         } else {
-            System.out.println(" No user found in DB with clerkId: " + clerkId);
+            log.warn("No user found for clerkId={}", clerkId);
         }
     }
 
     @Override
     public UserDTO getUserByClerkId(String clerkId){
+        log.info("Fetching user by clerkId={}", clerkId);
       UserEntity userEntity=  userRepository.findByClerkId(clerkId).orElseThrow(()-> new UsernameNotFoundException("User not found"));
+      log.info("User fetched successfully for clerkId={}", clerkId);
      return mapToDTO(userEntity);
 
     }
 
     @Override
     public UserDTO saveUser(UserDTO userDTO){
+        log.info("Saving user with clerkId={}", userDTO.getClerkId());
       Optional<UserEntity> optionalUser= userRepository.findByClerkId(userDTO.getClerkId());
       if(optionalUser.isPresent()){
+          log.info("Existing user found. Updating details. clerkId={}",
+                  userDTO.getClerkId());
           UserEntity exsistingUser= optionalUser.get();
           exsistingUser.setEmail(userDTO.getEmail());
           exsistingUser.setFirstName(userDTO.getFirstName());
           exsistingUser.setLastName((userDTO.getLastName()));
           exsistingUser.setPhotoUrl(String.valueOf(userDTO.getPhotoUrl()));
           if(userDTO.getCredits()!=null){
+              log.info("Updating credits for clerkId={}, credits={}",
+                      userDTO.getClerkId(), userDTO.getCredits());
               exsistingUser.setCredits((userDTO.getCredits()));
           }
          exsistingUser= userRepository.save(exsistingUser);
-         return  mapToDTO(exsistingUser);
-
-
-
+          log.info("User updated successfully for clerkId={}",
+                  userDTO.getClerkId());
+          return  mapToDTO(exsistingUser);
       }
         UserEntity newUser= mapToEntity(userDTO);
+        log.info("No existing user found. Creating new user. clerkId={}",
+                userDTO.getClerkId());
         userRepository.save(newUser);
+        log.info("New user created successfully for clerkId={}",
+                userDTO.getClerkId());
         return mapToDTO(newUser);
 
 
